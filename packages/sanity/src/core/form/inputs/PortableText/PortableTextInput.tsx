@@ -24,7 +24,7 @@ import {Subject} from 'rxjs'
 import {Box, useToast} from '@sanity/ui'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import {debounce} from 'lodash'
-import {FormPatch, SANITY_PATCH_TYPE} from '../../patch'
+import {SANITY_PATCH_TYPE} from '../../patch'
 import {ArrayOfObjectsItemMember, ObjectFormNode} from '../../store'
 import type {ArrayOfObjectsInputProps, PortableTextMarker, RenderCustomMarkers} from '../../types'
 import {EMPTY_ARRAY} from '../../../util'
@@ -100,8 +100,8 @@ export function PortableTextInput(props: PortableTextInputProps) {
     },
   }))
 
-  // TODO: why are these not stable???
-  const _onItemRemove = useMemo(() => props.onItemRemove, [])
+  // TODO: why is this not stable?
+  const [_onItemRemove] = useState<(itemKey: string) => void>(props.onItemRemove)
 
   const {subscribe} = usePatches({path})
   const editorRef = useRef<PortableTextEditor | null>(null)
