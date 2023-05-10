@@ -11,11 +11,12 @@ import {AuthStore, createAuthStore} from '../store/_legacy'
 import {FileSource, ImageSource} from '../form/studio/assetSource'
 import {InitialValueTemplateItem, Template, TemplateResponse} from '../templates'
 import {isNonNullable} from '../util'
-import {validateWorkspaces} from '../studio'
+import {createI18nApi, defaultI18nOptions, validateWorkspaces} from '../studio'
 import {filterDefinitions} from '../studio/components/navbar/search/definitions/defaultFilters'
 import {operatorDefinitions} from '../studio/components/navbar/search/definitions/operators/defaultOperators'
 import {
   Config,
+  I18nApi,
   MissingConfigFile,
   PreparedConfig,
   SingleWorkspace,
@@ -30,6 +31,8 @@ import {
   documentBadgesReducer,
   documentLanguageFilterReducer,
   fileAssetSourceResolver,
+  i18nLoaderReducer,
+  i18nOptionsReducer,
   imageAssetSourceResolver,
   initialDocumentActions,
   initialDocumentBadges,
@@ -44,6 +47,7 @@ import {resolveConfigProperty} from './resolveConfigProperty'
 import {ConfigResolutionError} from './ConfigResolutionError'
 import {SchemaError} from './SchemaError'
 import {createDefaultIcon} from './createDefaultIcon'
+import {i18nSchema} from './i18nSchema'
 
 type InternalSource = WorkspaceSummary['__internal']['sources'][number]
 
@@ -139,6 +143,26 @@ export function prepareConfig(
           throw new SchemaError(schema)
         }
 
+        const i18nInitOptions = resolveConfigProperty({
+          propertyName: 'i18n',
+          config: source,
+          context: {projectId, dataset},
+          reducer: i18nOptionsReducer,
+          initialValue: defaultI18nOptions,
+        })
+
+        const i18nLoaders = resolveConfigProperty({
+          config: source,
+          context: {projectId, dataset},
+          propertyName: 'i18n',
+          reducer: i18nLoaderReducer,
+          initialValue: [],
+        })
+
+        const i18n = createI18nApi({initOptions: i18nInitOptions, languageLoaders: i18nLoaders})
+
+        i18nSchema(schema, i18n.i18next)
+
         const source$ = auth.state.pipe(
           map(({client, authenticated, currentUser}) => {
             return resolveSource({
@@ -148,6 +172,7 @@ export function prepareConfig(
               schema,
               authenticated,
               auth,
+              i18n,
             })
           }),
           shareReplay(1)
@@ -160,6 +185,7 @@ export function prepareConfig(
           title: source.title || startCase(source.name),
           auth,
           schema,
+          i18n,
           source: source$,
         }
       })
@@ -172,6 +198,7 @@ export function prepareConfig(
         basePath: joinBasePath(rootPath, rootSource.basePath),
         dataset: rootSource.dataset,
         schema: resolvedSources[0].schema,
+        i18n: resolvedSources[0].i18n,
         icon: normalizeIcon(
           rootSource.icon,
           title,
@@ -201,6 +228,7 @@ interface ResolveSourceOptions {
   currentUser: CurrentUser | null
   authenticated: boolean
   auth: AuthStore
+  i18n: I18nApi
 }
 
 function getBifurClient(client: SanityClient, auth: AuthStore) {
@@ -219,6 +247,7 @@ function resolveSource({
   schema,
   authenticated,
   auth,
+  i18n,
 }: ResolveSourceOptions): Source {
   const {dataset, projectId} = config
   const bifur = getBifurClient(client, auth)
@@ -443,6 +472,7 @@ function resolveSource({
     authenticated,
     templates,
     auth,
+    i18n,
     document: {
       actions: (partialContext) =>
         resolveConfigProperty({

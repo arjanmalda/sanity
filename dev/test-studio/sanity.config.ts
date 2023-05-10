@@ -1,6 +1,6 @@
 import {BookIcon} from '@sanity/icons'
 import {visionTool} from '@sanity/vision'
-import {defineConfig, definePlugin} from 'sanity'
+import {defineConfig, definePlugin, LanguageLoader, StudioStrings, typed} from 'sanity'
 import {deskTool} from 'sanity/desk'
 import {muxInput} from 'sanity-plugin-mux-input'
 import {theme as tailwindTheme} from 'https://themer.sanity.build/api/hues?preset=tw-cyan&default=64748b&primary=d946ef;lightest:fdf4ff;darkest:701a75&transparent=6b7180;darkest:111826&positive=43d675;400;lightest:f8fafc&caution=f59e09;300;lightest:fffbeb;darkest:783510&critical=f43f5e;lightest:fef1f2;darkest:881337&lightest=ffffff&darkest=0f172a'
@@ -42,6 +42,44 @@ const sharedSettings = definePlugin({
       logo: Branding,
     },
   },
+
+  i18n: {
+    initOptions: (prev) => ({
+      ...prev,
+      lng: 'no',
+      supportedLngs: ['no', 'en'],
+    }),
+    languageLoaders: (prev) => {
+      const testStudioLoader: LanguageLoader = async (lang) => {
+        if (lang === 'en') {
+          const {testStudioStrings, schemaStrings} = await import('./i18n/en')
+          return [
+            {namespace: 'testStudio', resources: testStudioStrings},
+            {namespace: 'schema', resources: schemaStrings},
+          ]
+        }
+        if (lang === 'no') {
+          const {testStudioStrings, schemaStrings} = await import('./i18n/no')
+          return [
+            {namespace: 'testStudio', resources: testStudioStrings},
+            {namespace: 'schema', resources: schemaStrings},
+          ]
+        }
+        return undefined
+      }
+
+      const noLanguageStudioPack: LanguageLoader = async (lang) => {
+        if (lang === 'no') {
+          const {defaultStudioStrings} = await import('./i18n/no')
+          return [{namespace: 'studio', resources: defaultStudioStrings}]
+        }
+        return undefined
+      }
+
+      return [...prev, testStudioLoader, noLanguageStudioPack]
+    },
+  },
+
   document: {
     actions: documentActions,
     newDocumentOptions,
