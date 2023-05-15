@@ -12,7 +12,7 @@ import {
   ConfigContext,
   InitialValueTemplateItem,
   DocumentStore,
-  I18nApi,
+  I18nSource,
 } from 'sanity'
 
 /** @internal */
@@ -46,7 +46,7 @@ export interface StructureResolverContext extends ConfigContext {
   documentStore: DocumentStore
 
   /** alpha*/
-  i18n: I18nApi
+  i18n: I18nSource
 }
 
 /** @beta */

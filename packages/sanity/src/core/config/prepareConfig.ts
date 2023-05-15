@@ -11,12 +11,13 @@ import {AuthStore, createAuthStore} from '../store/_legacy'
 import {FileSource, ImageSource} from '../form/studio/assetSource'
 import {InitialValueTemplateItem, Template, TemplateResponse} from '../templates'
 import {isNonNullable} from '../util'
-import {createI18nApi, defaultI18nOptions, validateWorkspaces} from '../studio'
+import {validateWorkspaces} from '../studio'
 import {filterDefinitions} from '../studio/components/navbar/search/definitions/defaultFilters'
 import {operatorDefinitions} from '../studio/components/navbar/search/definitions/operators/defaultOperators'
+import {prepareI18nSource} from '../i18n/i18nConfig'
 import {
   Config,
-  I18nApi,
+  I18nSource,
   MissingConfigFile,
   PreparedConfig,
   SingleWorkspace,
@@ -31,8 +32,6 @@ import {
   documentBadgesReducer,
   documentLanguageFilterReducer,
   fileAssetSourceResolver,
-  i18nLoaderReducer,
-  i18nOptionsReducer,
   imageAssetSourceResolver,
   initialDocumentActions,
   initialDocumentBadges,
@@ -47,7 +46,6 @@ import {resolveConfigProperty} from './resolveConfigProperty'
 import {ConfigResolutionError} from './ConfigResolutionError'
 import {SchemaError} from './SchemaError'
 import {createDefaultIcon} from './createDefaultIcon'
-import {i18nSchema} from './i18nSchema'
 
 type InternalSource = WorkspaceSummary['__internal']['sources'][number]
 
@@ -142,26 +140,7 @@ export function prepareConfig(
           // TODO: consider using the `ConfigResolutionError`
           throw new SchemaError(schema)
         }
-
-        const i18nInitOptions = resolveConfigProperty({
-          propertyName: 'i18n',
-          config: source,
-          context: {projectId, dataset},
-          reducer: i18nOptionsReducer,
-          initialValue: defaultI18nOptions,
-        })
-
-        const i18nLoaders = resolveConfigProperty({
-          config: source,
-          context: {projectId, dataset},
-          propertyName: 'i18n',
-          reducer: i18nLoaderReducer,
-          initialValue: [],
-        })
-
-        const i18n = createI18nApi({initOptions: i18nInitOptions, languageLoaders: i18nLoaders})
-
-        i18nSchema(schema, i18n.i18next)
+        const i18n = prepareI18nSource(source, schema)
 
         const source$ = auth.state.pipe(
           map(({client, authenticated, currentUser}) => {
@@ -228,7 +207,7 @@ interface ResolveSourceOptions {
   currentUser: CurrentUser | null
   authenticated: boolean
   auth: AuthStore
-  i18n: I18nApi
+  i18n: I18nSource
 }
 
 function getBifurClient(client: SanityClient, auth: AuthStore) {

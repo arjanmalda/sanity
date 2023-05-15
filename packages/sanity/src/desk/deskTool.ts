@@ -1,6 +1,5 @@
 import {MasterDetailIcon} from '@sanity/icons'
 import {lazy} from 'react'
-import {definePlugin} from 'sanity'
 import {
   DeleteAction,
   DiscardChangesAction,
@@ -13,6 +12,11 @@ import {LiveEditBadge} from './documentBadges'
 import {getIntentState} from './getIntentState'
 import {router} from './router'
 import {DeskToolOptions} from './types'
+import {deskI18nNamespace} from './i18n'
+import {deskI18nNamespaceStrings} from './i18n/locales/en-US/desk'
+import {deskLocaleLoader} from './i18n/deskLocaleLoader'
+import {definePlugin, localizedLanguages} from 'sanity'
+import {ResourceLanguage} from 'i18next'
 
 const documentActions = [
   PublishAction,
@@ -66,4 +70,17 @@ export const deskTool = definePlugin<DeskToolOptions | void>((options) => ({
       router,
     },
   ],
+  i18n: {
+    initOptions: (initOptions) => ({
+      ...initOptions,
+      resources: {
+        ...initOptions.resources,
+        [localizedLanguages['en-US'].id]: {
+          ...initOptions.resources?.['en-US'],
+          [deskI18nNamespace]: deskI18nNamespaceStrings,
+        },
+      },
+    }),
+    languageLoaders: [deskLocaleLoader],
+  },
 }))
