@@ -11,7 +11,7 @@ import type {
 } from '@sanity/types'
 import React, {type ComponentType} from 'react'
 import type {Observable} from 'rxjs'
-import type {InitOptions, i18n, TFunction} from 'i18next'
+import type {i18n, InitOptions, TFunction, ResourceLanguage} from 'i18next'
 import type {
   FieldProps,
   FormBuilderCustomMarkersComponent,
@@ -25,12 +25,7 @@ import {AuthStore} from '../store'
 import {StudioTheme} from '../theme'
 import {SearchFilterDefinition} from '../studio/components/navbar/search/definitions/filters'
 import {SearchOperatorDefinition} from '../studio/components/navbar/search/definitions/operators'
-import {
-  I18nPluginOptions,
-  LanguageBundle,
-  StudioComponents,
-  StudioComponentsPluginOptions,
-} from './studio'
+import {StudioComponents, StudioComponentsPluginOptions} from './studio'
 import {DocumentActionComponent, DocumentBadgeComponent} from './document'
 import {Router, RouterState} from 'sanity/router'
 
@@ -204,6 +199,116 @@ export type DocumentBadgesResolver = ComposableOption<
   DocumentBadgesContext
 >
 
+/** @alpha */
+export interface I18nContext {
+  projectId: string
+  dataset: string
+}
+
+/** @alpha */
+export interface LanguageBundle {
+  namespace: string
+  resources: ResourceLanguage
+  /** Should the resources be merged deeply (nested objects). Default: true */
+  deep?: boolean
+  /** Should existing resource keys for the namespace be overwritten. Default: false */
+  overwrite?: boolean
+}
+
+/** @alpha */
+export type I18nLanguagesOption =
+  | ((prev: LanguageDefinition[], context: I18nContext) => LanguageDefinition[])
+  | LanguageDefinition[]
+
+/** @alpha */
+export type I18nLanguageLoaderOption =
+  | ((prev: LanguageLoader[], context: I18nContext) => LanguageLoader[])
+  | LanguageLoader[]
+
+/** @alpha */
+export interface I18nPluginOptions {
+  /**
+   * Defines which languages should be available for user selection.
+   * Prev is initially `[{id: 'en-US', title: 'English (US)', icon: AmericanFlag }]`
+   *
+   * Language titles and icons can be changed by transforming the LanguageDefinition array values.
+   *
+   * User selected language
+   */
+  languages?: I18nLanguagesOption
+
+  /**
+   * Allows redefining the I18next init options before they are used.
+   * Invoked when a workspace is loaded
+   */
+  initOptions?: (options: InitOptions, context: I18nContext) => InitOptions
+
+  /**
+   * Defines language bundles that will be loaded lazily.
+   *
+   * ### Example
+   *
+   * ```ts
+   *
+   * ```
+   *
+   */
+  languageLoaders?: I18nLanguageLoaderOption
+
+  /**
+   * When this is true, schema type title and descriptions will be translated.
+   * Configure a languageLoader that returns a language bundle for the `schema` namespace,
+   * with resource keys using the following convention:
+   *
+   * ## Keys for types
+   * - `<typeName>|title`
+   * - `<typeName>|description`
+   *
+   * ## Keys for fields
+   *
+   * -`<objectTypeName>.<fieldName>|title`
+   * -`<objectTypeName>.<fieldName>|description`
+   *
+   * ## Keys for array items
+   *
+   * - `<arrayTypeName>.<arrayMemberTypeName>|title`
+   * - `<arrayTypeName>.<arrayMemberTypeName>|description`
+   *
+   * ## Caveats
+   *
+   * Enabling schema translations could adversely impact studio performance.
+   * Inline definitions for objects are not supported (nested types).
+   *
+   * ## Example LanguageBundle
+   *
+   *```ts
+   * // locales/en_US/schema.ts
+   * export default {
+   *   namespace: 'schema',
+   *   resources: {
+   *     'myDocumentType|title': 'Document type 'myDocumentType' will use this string as title wherever it is used',
+   *
+   *     'myDocumentType.text|title': 'Document field named 'text' will use this string as title'
+   *     'myDocumentType.text|description': 'Document field named 'text' will this string as description',
+   *   },
+   *  }
+   *```
+   *
+   * Now, in studio.config.ts:
+   * ```ts
+   * defineConfig({
+   *   i18n: {
+   *     experimentalTranslateSchemas: true,
+   *     languageLoaders: [
+   *         (lang) => import(`./locales/${lang}/schema.ts`),
+   *     ]
+   *   },
+   * })
+   * ```
+   */
+  experimentalTranslateSchemas?: boolean
+}
+
 /** @beta */
 export interface PluginOptions {
   name: string
@@ -217,7 +322,7 @@ export interface PluginOptions {
   studio?: {
     components?: StudioComponentsPluginOptions
   }
-  /** alpha */
+  /** @alpha */
   i18n?: I18nPluginOptions
 }
 
@@ -387,13 +492,13 @@ export interface Source {
   }
 
   /** @alpha */
-  i18n: I18nSource
-
-  /** @alpha */
   search: {
     filters: SearchFilterDefinition[]
     operators: SearchOperatorDefinition[]
   }
+
+  /** @internal */
+  i18n: I18nSource
 
   /** @internal */
   __internal: {
@@ -403,15 +508,17 @@ export interface Source {
   }
 }
 
+/** @alpha */
 export interface LanguageDefinition {
   id: string
   title: string
   icon?: ComponentType
 }
 
+/** @alpha */
 export type LanguageLoaderResult = Promise<LanguageBundle | {default: LanguageBundle} | undefined>
 
-// TODO return observable instead of Promise?
+/** @alpha */
 export type LanguageLoader = (language: string, context: {i18n: i18n}) => LanguageLoaderResult
 
 /** @internal */

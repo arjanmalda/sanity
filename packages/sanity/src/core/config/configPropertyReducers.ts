@@ -11,13 +11,13 @@ import type {
   DocumentBadgesContext,
   DocumentLanguageFilterComponent,
   DocumentLanguageFilterContext,
+  I18nContext,
   LanguageDefinition,
   LanguageLoader,
   NewDocumentOptionsContext,
   ResolveProductionUrlContext,
   Tool,
 } from './types'
-import {I18nContext} from './studio'
 
 export const initialDocumentBadges: DocumentBadgeComponent[] = []
 

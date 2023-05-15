@@ -12,11 +12,10 @@ import {LiveEditBadge} from './documentBadges'
 import {getIntentState} from './getIntentState'
 import {router} from './router'
 import {DeskToolOptions} from './types'
-import {deskI18nNamespace} from './i18n'
+import {deskI18nNamespace} from './i18n/i18nNamespaces'
 import {deskI18nNamespaceStrings} from './i18n/locales/en-US/desk'
 import {deskLocaleLoader} from './i18n/deskLocaleLoader'
 import {definePlugin, localizedLanguages} from 'sanity'
-import {ResourceLanguage} from 'i18next'
 
 const documentActions = [
   PublishAction,
