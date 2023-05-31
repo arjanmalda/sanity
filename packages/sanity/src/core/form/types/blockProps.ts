@@ -16,7 +16,9 @@ import {FormNodePresence} from '../../presence'
 import {PortableTextMarker} from '../..'
 import {RenderPreviewCallback} from './renderCallback'
 
-/** @beta */
+/**
+ * @hidden
+ * @beta */
 export interface BlockDecoratorProps {
   children: React.ReactElement
   focused: boolean
@@ -27,7 +29,9 @@ export interface BlockDecoratorProps {
   value: string
 }
 
-/** @beta */
+/**
+ * @hidden
+ * @beta */
 export interface BlockStyleProps {
   block: PortableTextTextBlock
   children: React.ReactElement
@@ -39,7 +43,9 @@ export interface BlockStyleProps {
   value: string
 }
 
-/** @beta */
+/**
+ * @hidden
+ * @beta */
 export interface BlockListItemProps {
   block: PortableTextTextBlock
   children: React.ReactElement
@@ -52,7 +58,9 @@ export interface BlockListItemProps {
   value: string
 }
 
-/** @beta */
+/**
+ * @hidden
+ * @beta */
 export interface BlockAnnotationProps {
   __unstable_boundaryElement?: HTMLElement // Boundary element for the annotation, typically a scroll container
   __unstable_referenceElement?: HTMLElement // Reference element representing the annotation in the DOM
@@ -77,7 +85,9 @@ export interface BlockAnnotationProps {
   value: PortableTextObject
 }
 
-/** @beta */
+/**
+ * @hidden
+ * @beta */
 export interface BlockProps {
   __unstable_boundaryElement?: HTMLElement // Boundary element for the block, typically a scroll container
   __unstable_referenceElement?: HTMLElement // Reference element representing the block in the DOM

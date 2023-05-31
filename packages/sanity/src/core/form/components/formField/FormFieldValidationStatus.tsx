@@ -9,10 +9,14 @@ import React, {useMemo} from 'react'
 /** @internal */
 export interface FormFieldValidationStatusProps {
   /**
+   *
+   * @hidden
    * @beta
    */
   validation?: FormNodeValidation[]
   /**
+   *
+   * @hidden
    * @beta
    */
   __unstable_showSummary?: boolean
