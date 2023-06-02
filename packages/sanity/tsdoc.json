@@ -18,6 +18,8 @@
         "@link": true,
         "@example": true,
         "@deprecated": true,
-        "@alpha": true
+        "@alpha": true,
+        "@param": true,
+        "@return": true
       }
 }
